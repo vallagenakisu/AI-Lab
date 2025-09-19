@@ -13,55 +13,53 @@ class State:
         print("-" * 5)
 
 def actions(state):
-    return [(i,j) for i in range(3) for j in range(3) if state.board[i][j] == ' ']
+    return [(i, j) for i in range(3) for j in range(3) if state.board[i][j] == ' ']
 
 def result(state, action):
-    i,j = action 
-    new_state = State(state.board, 'O' if state.playe == 'X' else 'X')
+    i, j = action
+    new_state = State(state.board, 'O' if state.player == 'X' else 'X')
     new_state.board[i][j] = state.player
     return new_state
 
-
 def terminal(state):
     b = state.board
-    lines = b + [list(col) for col in zip(*b)] + [ [b[i][i] for i in range (3) ]  , [b[j][2-j] for j in range (3) ] ] 
-    if any( line == ['X']*3 or line == ['O']*3 for line in lines):
+    lines = b + [list(col) for col in zip(*b)] + [[b[i][i] for i in range(3)], [b[i][2-i] for i in range(3)]]
+    if any(line == ['X'] * 3 or line == ['O'] * 3 for line in lines):
         return True
-    elif all(line !=' ' for line in lines):
+    if all(cell != ' ' for row in b for cell in row):
         return True
-    return False 
+    return False
+
 def utility(state):
     b = state.board
-    lines = b + [list(col) for col in zip(*b)] + [ [b[i][i] for i in range (3) ]  , [b[j][2-j] for j in range (3) ] ] 
-    if ['X']*3 in lines:
+    lines = b + [list(col) for col in zip(*b)] + [[b[i][i] for i in range(3)], [b[i][2-i] for i in range(3)]]
+    if ['X'] * 3 in lines:
         return 1
-    elif ['O']*3 in lines:
+    if ['O'] * 3 in lines:
         return -1
-    else:
-        return 0
+    return 0
 
 def max_value(state):
-    if(terminal(state)):
-        return utility(state)
-    value , best_action = -math.inf , None
+    if terminal(state):
+        return utility(state), None
+    value, best_action = -math.inf, None
     for action in actions(state):
-       new_state = result(state, action)
-       new_value,_ = min_value(new_state)
-       if new_value > value:
-           value , best_action = new_value , action
-    return value , best_action
-
+        new_state = result(state, action)
+        eval_value, _ = min_value(new_state)
+        if eval_value > value:
+            value, best_action = eval_value, action
+    return value, best_action
 
 def min_value(state):
-    if(terminal(state)):
-        return utility(state)
-    value , best_action = math.inf , None
+    if terminal(state):
+        return utility(state), None
+    value, best_action = math.inf, None
     for action in actions(state):
-       new_state = result(state, action)
-       new_value,_ = min_value(new_state)
-       if new_value < value:
-           value , best_action = new_value , action
-    return value , best_action
+        new_state = result(state, action)
+        eval_value, _ = max_value(new_state)
+        if eval_value < value:
+            value, best_action = eval_value, action
+    return value, best_action
 
 def minimax(state):
     if state.player == 'X':   # Maximizer
